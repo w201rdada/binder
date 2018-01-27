@@ -1,4 +1,4 @@
-FROM rocker/verse:latest
+FROM rocker/geospatial:latest
 
 ENV NB_USER rstudio
 ENV NB_UID 1000
@@ -31,19 +31,15 @@ RUN python3 -m venv ${VENV_DIR} && \
     # Explicitly install a new enough version of pip
     pip3 install pip==9.0.1 && \
     pip3 install --no-cache-dir \
-         notebook==5.2.2 \
-         nbrsessionproxy==0.4.1 && \
+         notebook==5.3 \
+         git+https://github.com/yuvipanda/nbrsessionproxy.git@8ff0c3ba16078527b4077b26e7a65cc29dcc585a
+RUN pip3 install --no-cache-dir --upgrade \
+         git+https://github.com/yuvipanda/nbserverproxy.git@59dc44cdeb7556d00bdd7ec95e349c1fc4b48c28 && \
     jupyter serverextension enable --sys-prefix --py nbrsessionproxy && \
     jupyter nbextension install    --sys-prefix --py nbrsessionproxy && \
     jupyter nbextension enable     --sys-prefix --py nbrsessionproxy
 
-
-RUN R --quiet -e "devtools::install_github('IRkernel/IRkernel')" && \
-    R --quiet -e "IRkernel::installspec(prefix='${VENV_DIR}')"
+ENV USER rstudio
 
 
 CMD jupyter notebook --ip 0.0.0.0
-
-
-## If extending this image, remember to switch back to USER root to apt-get
-
